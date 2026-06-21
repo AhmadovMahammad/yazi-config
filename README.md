@@ -2,8 +2,6 @@
 
 My [Yazi](https://github.com/sxyazi/yazi) config: vim-style keys, git status, Flexoki Dark theme.
 
-By [@AhmadovMahammad](https://github.com/AhmadovMahammad)
-
 ![preview](screenshots/flexoki-dark.png)
 
 ## Install
