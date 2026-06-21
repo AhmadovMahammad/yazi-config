@@ -153,6 +153,8 @@ preloaders = [
 ]
 previewers = [
 	{ url = "*/", run = "folder" },
+	# Markdown
+	{ url = "*.{md,markdown}", run = 'piper -- CLICOLOR_FORCE=1 glow -w=$w -s=dark "$1"' },
 	# Code
 	{ mime = "text/*", run = "code" },
 	{ mime = "application/{mbox,javascript,wine-extension-ini}", run = "code" },
