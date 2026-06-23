@@ -1,10 +1,9 @@
-# Yazi runtime / cache
-/state.toml
-/package.toml.lock
-
-# Managed by `ya pkg` (restored via `ya pkg install`, tracked in package.toml)
-/plugins/
-/flavors/
-
-# Backups
+# Editor / OS junk
 *.bak
+*.swp
+*~
+.DS_Store
+
+# Vim runtime (not config)
+vim/undo/
+.netrwhist

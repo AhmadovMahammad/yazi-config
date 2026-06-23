@@ -1,0 +1,74 @@
+" --- Global IdeaVim Config (Source of Truth) ---
+
+" [General Settings]
+set number
+set relativenumber
+set showmode
+set incsearch
+set ignorecase
+set smartcase
+set hlsearch
+set scrolloff=5
+set clipboard+=unnamedplus
+
+" Set Leader key to Space
+let mapleader = " "
+
+" [IdeaVim Plugins]
+set surround
+set commentary
+set multiple-cursors
+set argtextobj
+set easymotion
+set textobj-entire
+set ReplaceWithRegister
+
+" [Basic Mappings]
+nnoremap <leader>nh :nohlsearch<CR>
+nnoremap <leader>w :w<CR>
+
+" [Split Navigation]
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+
+" [Tab / Document Management]
+nnoremap <leader>ct :action CloseContent<CR>
+nnoremap <leader>ca :action CloseAllEditors<CR>
+nnoremap <leader>pt :action PinActiveTab<CR>
+nnoremap <leader>cx :action CloseAllUnpinnedEditors<CR>
+
+" [IDE Actions]
+nnoremap <leader>gd :action GotoDefinition<CR>
+nnoremap <leader>gi :action GotoImplementation<CR>
+nnoremap <leader>gu :action FindUsages<CR>
+nnoremap <leader>sp :action SearchEverywhere<CR>
+nnoremap <leader>e :action ActivateProjectToolWindow<CR>
+nnoremap <leader>rn :action RenameElement<CR>
+nnoremap <leader>fm :action ReformatCode<CR>
+nnoremap <leader>oi :action OptimizeImports<CR>
+nnoremap <leader>gc :action Vcs.CheckinProject<CR>
+nnoremap <leader>st :action ActivateTerminalToolWindow<CR>
+nnoremap <leader>gl :action Vcs.Show.Log<CR>
+
+" [Speed Boost Additions]
+nnoremap <leader>rf :action RecentFiles<CR>
+nnoremap <leader>rr :action Run<CR>
+nnoremap <leader>dd :action Debug<CR>
+nnoremap <leader>qa :action ShowIntentionActions<CR>
+nnoremap ]e :action GotoNextError<CR>
+nnoremap [e :action GotoPreviousError<CR>
+
+" [Visual Mode Quality of Life]
+vnoremap < <gv
+vnoremap > >gv
+vnoremap J :m '>+1<CR>gv=gv
+vnoremap K :m '<-2<CR>gv=gv
+
+nnoremap <leader>zz :action ExpandCollapseToggleAction<CR>
+nnoremap <leader>zc :action CollapseAllRegions<CR>
+nnoremap <leader>zo :action ExpandAllRegions<CR>
+
+nnoremap ]m :action MethodDown<CR>
+nnoremap [m :action MethodUp<CR>

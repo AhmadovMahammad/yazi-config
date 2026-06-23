@@ -1,0 +1,155 @@
+"  ~/.vimrc  —  minimal, no plugins, only what I actually use
+
+set nocompatible          " behave like Vim, not old vi (must be first)
+let mapleader = " "       " Space is the leader key (same as your Rider setup)
+
+" ---- Syntax & filetype-aware indenting -------------------------------------
+syntax on                 " color the code
+filetype plugin indent on " load per-language indent rules (Python, C, Go...)
+
+" ---- Indentation -----------------------------------------------------------
+" New lines keep the previous line's indent + add a level after { (your ask).
+set autoindent            " new line starts at the same column as the one above
+set smartindent           " add/remove a level around { } and keywords
+set expandtab             " Tab inserts spaces, not a real tab character
+set tabstop=4             " a tab is shown as 4 columns
+set shiftwidth=4          " one indent level = 4 spaces
+set softtabstop=4         " Backspace deletes a full 4-space "tab" at once
+
+" ---- Display ---------------------------------------------------------------
+set number                " absolute line numbers
+set relativenumber        " other lines numbered relative to cursor (easy jumps)
+set ruler                 " show line,col in bottom-right
+set showcmd               " show the keys you're typing (e.g. partial commands)
+set laststatus=2          " always show the status line
+set scrolloff=5           " keep 5 lines visible above/below the cursor
+set nowrap                " don't soft-wrap long lines
+set termguicolors         " use full 24-bit colors in the terminal
+set cursorline            " highlight the line the cursor is on
+silent! colorscheme flexoki-dark  " theme in ~/.vim/colors/flexoki-dark.vim
+
+" ---- Searching -------------------------------------------------------------
+set incsearch             " jump to matches as you type
+set hlsearch              " highlight all matches
+set ignorecase            " case-insensitive search...
+set smartcase             " ...unless you type an uppercase letter
+" Clear the search highlight (same key as Rider: <leader>nh = "no highlight")
+nnoremap <silent> <leader>nh :nohlsearch<CR>
+
+" ---- Sane editing defaults -------------------------------------------------
+set backspace=indent,eol,start  " let Backspace delete everything in insert mode
+set hidden                " switch buffers without forcing a save
+set mouse=a               " enable the mouse (resize splits, scroll, select)
+set wildmenu              " visual menu when tab-completing : commands
+set splitright splitbelow " new splits open to the right / below
+set confirm               " ask to save instead of erroring on :q
+" Yank/paste through the SYSTEM clipboard (needs +clipboard, i.e. vim-gtk3).
+" Guarded so it stays harmless if vim has no clipboard support.
+if has('clipboard')
+  set clipboard=unnamedplus
+endif
+
+" ---- Persistent undo (undo even after closing the file) --------------------
+set undofile
+set undodir=~/.vim/undo
+
+" ============================================================================
+"  Auto-close brackets & quotes  (native mappings, no plugin)
+" ============================================================================
+" Type an opener -> the closer is added and the cursor sits between them.
+inoremap ( ()<Left>
+inoremap [ []<Left>
+inoremap { {}<Left>
+inoremap " ""<Left>
+inoremap ' ''<Left>
+inoremap ` ``<Left>
+
+" Press Enter right after { -> expand into a properly indented block:
+"     {
+"         |          <- cursor here, indented one level
+"     }
+inoremap {<CR> {<CR>}<C-o>O
+
+" If a closer is already in front of the cursor, just step over it
+" (so typing ) over an auto-added ) doesn't give you ")) ").
+inoremap <expr> ) getline('.')[col('.')-1] ==# ')' ? '<Right>' : ')'
+inoremap <expr> ] getline('.')[col('.')-1] ==# ']' ? '<Right>' : ']'
+inoremap <expr> } getline('.')[col('.')-1] ==# '}' ? '<Right>' : '}'
+
+" ============================================================================
+"  Keymaps ported from your Rider / IdeaVim setup
+"  (only the ones that work in plain Vim WITHOUT an IDE/LSP/plugins)
+" ============================================================================
+
+" ---- File / window basics --------------------------------------------------
+nnoremap <leader>w :w<CR>                 " save (same as Rider)
+nnoremap <leader>e :Lexplore<CR>          " toggle file tree (netrw, built-in)
+nnoremap <leader>st :botright terminal<CR> " open terminal at the bottom (Ctrl-W N to leave)
+nnoremap <leader>rf :browse oldfiles<CR>  " recent files (pick by number)
+
+" ---- Window navigation (Ctrl + h/j/k/l) ------------------------------------
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+
+" ---- Close buffers (Rider's tab management, closest native equivalents) ----
+nnoremap <leader>ct :bdelete<CR>          " close current buffer  (~CloseContent)
+nnoremap <leader>ca :%bdelete<CR>         " close all buffers     (~CloseAllEditors)
+
+" ---- Folding (Rider's collapse/expand regions) -----------------------------
+nnoremap <leader>zz za                    " toggle fold under cursor
+nnoremap <leader>zc zM                    " collapse all folds
+nnoremap <leader>zo zR                    " expand all folds
+
+" ---- "Format me": run a real formatter on the buffer ----------------------
+"   Python -> black,  C# -> csharpier.  Other filetypes fall back to Vim's
+"   indent-only reformat (gg=G). Cursor position is preserved.
+function! s:ReplaceBuffer(lines) abort
+  if empty(a:lines) || a:lines ==# getline(1, '$') | return | endif
+  call setline(1, a:lines)
+  if line('$') > len(a:lines)
+    silent execute (len(a:lines) + 1) . ',$delete _'
+  endif
+endfunction
+
+function! s:Format() abort
+  let l:view = winsaveview()
+  if &filetype ==# 'python'
+    if !executable('black')
+      echohl WarningMsg | echo 'black not installed' | echohl None
+    else
+      let l:out = systemlist('black -q -', getline(1, '$'))
+      if v:shell_error | echohl WarningMsg | echo 'black: format failed (syntax error?)' | echohl None
+      else | call s:ReplaceBuffer(l:out) | endif
+    endif
+  elseif &filetype ==# 'cs'
+    if !executable('csharpier')
+      echohl WarningMsg | echo 'csharpier not installed' | echohl None
+    else
+      let l:tmp = tempname() . '.cs'
+      call writefile(getline(1, '$'), l:tmp)
+      call system('csharpier format ' . shellescape(l:tmp))
+      if v:shell_error | echohl WarningMsg | echo 'csharpier: format failed (syntax error?)' | echohl None
+      else | call s:ReplaceBuffer(readfile(l:tmp)) | endif
+      call delete(l:tmp)
+    endif
+  else
+    normal! gg=G
+  endif
+  call winrestview(l:view)
+endfunction
+
+nnoremap <silent> <leader>fm :call <SID>Format()<CR>   " format the whole file
+
+" ---- Error / quickfix navigation (works once :make fills the quickfix) -----
+nnoremap ]e :cnext<CR>                     " next error      (~GotoNextError)
+nnoremap [e :cprevious<CR>                 " previous error  (~GotoPreviousError)
+
+" Note: ]m / [m (jump to next/previous method) are ALREADY native Vim motions.
+
+" ---- Visual mode quality-of-life (pure Vim, same as your Rider config) -----
+vnoremap < <gv                            " keep selection after dedent
+vnoremap > >gv                            " keep selection after indent
+vnoremap J :m '>+1<CR>gv=gv               " move selected lines down
+vnoremap K :m '<-2<CR>gv=gv               " move selected lines up
